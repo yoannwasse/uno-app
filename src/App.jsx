@@ -29,7 +29,7 @@ function buildDeck() {
   COLORS.forEach(color => {
     deck.push({ id: `c_${id++}`, color, value: '0' });
     for (let i = 0; i < 2; i++) {
-      ['1','2','3','4','5','6','7','8','9','skip','reverse','+2'].forEach(val => {
+      ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'skip', 'reverse', '+2'].forEach(val => {
         deck.push({ id: `c_${id++}`, color, value: val });
       });
     }
@@ -68,8 +68,7 @@ export default function App() {
     const cleanCode = code.toUpperCase().trim();
     const playerRef = ref(db, `rooms/${cleanCode}/players/${userId}`);
     await set(playerRef, { name: userName.trim(), hand: [], order: 0 });
-    
-    // Si la salle n'a pas encore de statut, on la met en lobby
+
     const statusRef = ref(db, `rooms/${cleanCode}/status`);
     onValue(statusRef, (snap) => {
       if (!snap.exists()) {
@@ -122,8 +121,8 @@ export default function App() {
     const isCurrentTurn = getPlayerTurn() === userId;
     if (!isCurrentTurn) return;
 
-    const isValid = card.color === 'wild' || 
-                    card.color === roomState.activeColor || 
+    const isValid = card.color === 'wild' ||
+                    card.color === roomState.activeColor ||
                     card.value === roomState.topCard.value;
 
     if (!isValid) return;
@@ -159,7 +158,7 @@ export default function App() {
       const deck = [...(roomState.deck || [])];
       const drawn = deck.splice(0, drawCount);
       const targetHand = [...(roomState.players[targetId].hand || []), ...drawn];
-      
+
       updates[`rooms/${roomCode}/deck`] = deck;
       updates[`rooms/${roomCode}/players/${targetId}/hand`] = targetHand;
       nextIndex = (nextIndex + roomState.direction + totalPlayers) % totalPlayers;
@@ -184,7 +183,7 @@ export default function App() {
 
     const drawn = deck.pop();
     const myHand = [...(roomState.players[userId].hand || []), drawn];
-    
+
     const playerIds = Object.keys(roomState.players).sort(
       (a, b) => roomState.players[a].order - roomState.players[b].order
     );
@@ -204,18 +203,18 @@ export default function App() {
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md space-y-6">
           <h1 className="text-3xl font-extrabold text-center text-red-600 tracking-wider">🎴 UNO EN LIGNE</h1>
-          
+
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1">Ton prénom :</label>
-            <input 
-              placeholder="Ex: Alex" 
-              value={userName} 
+            <input
+              placeholder="Ex: Alex"
+              value={userName}
               onChange={e => setUserName(e.target.value)}
               className="w-full border-2 border-gray-300 p-3 rounded-lg focus:outline-none focus:border-red-500 font-medium"
             />
           </div>
 
-          <button 
+          <button
             onClick={() => joinRoom(Math.random().toString(36).substring(2, 6))}
             className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg shadow-md transition"
           >
@@ -229,13 +228,13 @@ export default function App() {
           </div>
 
           <div className="flex gap-2">
-            <input 
-              placeholder="Code (ex: 4A2F)" 
-              value={roomCode} 
+            <input
+              placeholder="Code (ex: 4A2F)"
+              value={roomCode}
               onChange={e => setRoomCode(e.target.value.toUpperCase())}
               className="border-2 border-gray-300 p-3 rounded-lg flex-1 text-center font-bold tracking-widest uppercase focus:outline-none focus:border-red-500"
             />
-            <button 
+            <button
               onClick={() => joinRoom(roomCode)}
               className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-lg shadow-md transition"
             >
@@ -275,8 +274,8 @@ export default function App() {
               </div>
             ))}
           </div>
-          <button 
-            onClick={startGame} 
+          <button
+            onClick={startGame}
             className="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl shadow-lg transition"
           >
             Démarrer la partie 🚀
@@ -298,11 +297,11 @@ export default function App() {
       {/* Plateau de jeu en cours */}
       {roomState?.status === 'playing' && (
         <div className="flex-1 flex flex-col justify-around py-4">
-          
+
           {/* Centre de table */}
           <div className="flex justify-center items-center gap-6">
             {/* Pioche */}
-            <button 
+            <button
               onClick={drawCard}
               disabled={getPlayerTurn() !== userId}
               className={`w-24 h-36 rounded-xl border-4 border-slate-600 bg-slate-800 flex flex-col justify-center items-center font-bold text-white shadow-2xl transition ${
@@ -314,15 +313,37 @@ export default function App() {
             </button>
 
             {/* Talon (Carte du dessus) */}
-            <div className={`w-28 h-40 rounded-xl border-4 flex flex-col justify-between p-2 font-black text-white shadow-2xl ${
+            <div className={`w-28 h-40 rounded-xl border-4 overflow-hidden relative flex flex-col justify-between p-2 font-black text-white shadow-2xl ${
               roomState.activeColor === 'red' ? 'bg-red-600 border-red-400' :
               roomState.activeColor === 'blue' ? 'bg-blue-600 border-blue-400' :
               roomState.activeColor === 'green' ? 'bg-green-600 border-green-400' :
               'bg-yellow-500 border-yellow-300 text-slate-900'
             }`}>
-              <span className="text-xs uppercase">{roomState.activeColor}</span>
-              <span className="text-4xl text-center font-black">{roomState.topCard?.value}</span>
-              <span className="text-xs text-right uppercase">{roomState.activeColor}</span>
+              {roomState.topCard?.value === '+4' ? (
+                <>
+                  <img
+                    src="/plus4.jpg"
+                    alt="+4"
+                    className="absolute inset-0 w-full h-full object-cover opacity-80"
+                  />
+                  <div className="relative z-10 flex justify-between items-start text-xs font-black drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] text-white uppercase">
+                    <span>+4</span>
+                    <span>{roomState.activeColor}</span>
+                  </div>
+                  <span className="relative z-10 text-4xl text-center font-black drop-shadow-[0_3px_3px_rgba(0,0,0,0.9)] text-white">
+                    +4
+                  </span>
+                  <div className="relative z-10 text-right text-xs font-black drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] text-white uppercase">
+                    {roomState.activeColor}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <span className="text-xs uppercase">{roomState.activeColor}</span>
+                  <span className="text-4xl text-center font-black">{roomState.topCard?.value}</span>
+                  <span className="text-xs text-right uppercase">{roomState.activeColor}</span>
+                </>
+              )}
             </div>
           </div>
 
@@ -346,7 +367,7 @@ export default function App() {
                 <button
                   key={card.id}
                   onClick={() => playCard(card)}
-                  className={`w-16 h-24 rounded-lg border-2 flex flex-col justify-between p-1.5 font-bold shadow-lg transition transform hover:-translate-y-2 ${
+                  className={`w-16 h-24 rounded-lg border-2 relative overflow-hidden flex flex-col justify-between p-1.5 font-bold shadow-lg transition transform hover:-translate-y-2 ${
                     card.color === 'red' ? 'bg-red-600 border-red-400 text-white' :
                     card.color === 'blue' ? 'bg-blue-600 border-blue-400 text-white' :
                     card.color === 'green' ? 'bg-green-600 border-green-400 text-white' :
@@ -354,9 +375,24 @@ export default function App() {
                     'bg-slate-900 border-purple-500 text-white'
                   }`}
                 >
-                  <span className="text-xs">{card.value}</span>
-                  <span className="text-center text-lg">{card.value}</span>
-                  <span className="text-xs text-right">{card.value}</span>
+                  {card.value === '+4' ? (
+                    <>
+                      <img
+                        src="/plus4.jpg"
+                        alt="+4"
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
+                      <span className="relative z-10 text-xs font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">+4</span>
+                      <span className="relative z-10 text-center text-lg font-black text-white drop-shadow-[0_2px_3px_rgba(0,0,0,0.9)]">+4</span>
+                      <span className="relative z-10 text-xs text-right font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">+4</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-xs">{card.value}</span>
+                      <span className="text-center text-lg">{card.value}</span>
+                      <span className="text-xs text-right">{card.value}</span>
+                    </>
+                  )}
                 </button>
               ))}
             </div>
@@ -375,7 +411,7 @@ export default function App() {
                       className={`p-4 rounded-xl font-extrabold capitalize text-white shadow transition ${
                         c === 'red' ? 'bg-red-600 hover:bg-red-500' :
                         c === 'blue' ? 'bg-blue-600 hover:bg-blue-500' :
-                        c === 'green' ? 'bg-green-600 hover:bg-green-500' : 
+                        c === 'green' ? 'bg-green-600 hover:bg-green-500' :
                         'bg-yellow-500 hover:bg-yellow-400 text-slate-900'
                       }`}
                     >
